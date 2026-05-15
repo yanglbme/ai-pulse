@@ -61,7 +61,9 @@ export function Navbar() {
 
           {/* Right side */}
           <div className="flex items-center gap-2">
-            <ThemeToggle className="hidden sm:flex" />
+            <div className="hidden sm:flex">
+              <ThemeToggle />
+            </div>
 
             {user ? (
               <>

@@ -20,20 +20,43 @@ export function useAuth() {
     if (data) setProfile(data);
   }, []);
 
+  const hydrateProfileFromUser = (u: User) => {
+    const meta = u.user_metadata || {};
+    return {
+      id: u.id,
+      username: meta.user_name || meta.preferred_username || u.email?.split('@')[0] || '',
+      display_name: meta.full_name || meta.name || '',
+      avatar_url: meta.avatar_url || meta.picture_url || '',
+      bio: null,
+      created_at: u.created_at || new Date().toISOString(),
+      updated_at: u.updated_at || new Date().toISOString(),
+    } as Profile;
+  };
+
   useEffect(() => {
     const supabase = createClient();
 
     supabase.auth.getSession().then(({ data: { session } }) => {
-      setUser(session?.user ?? null);
-      if (session?.user) fetchProfile(session.user.id);
+      if (session?.user) {
+        setUser(session.user);
+        // 立即用 Session 中的 metadata 显示头像，避免闪烁
+        setProfile(hydrateProfileFromUser(session.user));
+        // 后台异步拉取数据库中的完整资料
+        fetchProfile(session.user.id);
+      } else {
+        setUser(null);
+        setProfile(null);
+      }
       setLoading(false);
     });
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user ?? null);
       if (session?.user) {
+        setUser(session.user);
+        setProfile(hydrateProfileFromUser(session.user));
         fetchProfile(session.user.id);
       } else {
+        setUser(null);
         setProfile(null);
       }
     });

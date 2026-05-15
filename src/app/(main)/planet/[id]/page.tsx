@@ -5,9 +5,10 @@ import { Avatar } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { TopicBadge } from '@/components/common/topic-badge';
 import { TagBadge } from '@/components/common/tag-badge';
+import { PostActionBar } from '@/components/planet/post-action-bar';
 import { formatFullDate } from '@/lib/utils/time';
 import Link from 'next/link';
-import { ArrowLeft, Heart, Bookmark } from 'lucide-react';
+import { ArrowLeft } from 'lucide-react';
 import { notFound } from 'next/navigation';
 import type { PageProps } from '@/types/page-props';
 
@@ -33,6 +34,18 @@ export default async function PostDetailPage(props: PageProps<'/planet/[id]'>) {
 
   if (error || !post) {
     notFound();
+  }
+
+  // Check like/bookmark status
+  let isLiked = false;
+  let isBookmarked = false;
+
+  if (user) {
+    const { data: like } = await supa.from('likes').select('id').eq('user_id', user.id).eq('post_id', id).single();
+    isLiked = !!like;
+    
+    const { data: bookmark } = await supa.from('bookmarks').select('id').eq('user_id', user.id).eq('post_id', id).single();
+    isBookmarked = !!bookmark;
   }
 
   // Flatten nested data
@@ -92,25 +105,13 @@ export default async function PostDetailPage(props: PageProps<'/planet/[id]'>) {
         </div>
 
         {/* Action bar */}
-        <div className="flex items-center gap-6 px-4 sm:px-6 py-3 border-t border-gray-100 dark:border-gray-700/50 bg-gray-50/50 dark:bg-gray-900/30">
-          <button className="flex items-center gap-2 text-sm text-gray-500 hover:text-red-500 transition-colors min-h-[44px]">
-            <Heart className="w-5 h-5" />
-            <span>{post.like_count}</span>
-          </button>
-          <button className="flex items-center gap-2 text-sm text-gray-500 hover:text-yellow-500 transition-colors min-h-[44px]">
-            <Bookmark className="w-5 h-5" />
-            <span>{post.bookmark_count}</span>
-          </button>
-          {user ? (
-            <button className="flex items-center gap-2 text-sm text-gray-500 hover:text-primary-600 transition-colors ml-auto min-h-[44px]">
-              <span>分享</span>
-            </button>
-          ) : (
-            <Link href="/login" className="flex items-center gap-2 text-sm text-primary-600 dark:text-primary-400 hover:underline ml-auto min-h-[44px]">
-              登录后互动
-            </Link>
-          )}
-        </div>
+        <PostActionBar
+          postId={post.id}
+          initialLiked={isLiked}
+          initialBookmarked={isBookmarked}
+          likeCount={post.like_count}
+          bookmarkCount={post.bookmark_count}
+        />
       </article>
 
       {/* Comments */}

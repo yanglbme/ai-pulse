@@ -27,7 +27,6 @@ export function PostCard({ post }: PostCardProps) {
     const originalLiked = liked;
     const originalCount = likeCount;
 
-    // Optimistic update
     setLiked(!liked);
     setLikeCount(prev => liked ? prev - 1 : prev + 1);
 
@@ -35,12 +34,10 @@ export function PostCard({ post }: PostCardProps) {
       const res = await fetch(`/api/posts/${post.id}/like`, { method: 'POST' });
       const json = await res.json();
       if (json.error) {
-        // Revert on failure
         setLiked(originalLiked);
         setLikeCount(originalCount);
       }
     } catch (err) {
-      console.error('Failed to toggle like:', err);
       setLiked(originalLiked);
       setLikeCount(originalCount);
     }
@@ -50,18 +47,15 @@ export function PostCard({ post }: PostCardProps) {
     if (!user) return;
     const originalBookmarked = bookmarked;
 
-    // Optimistic update
     setBookmarked(!bookmarked);
 
     try {
       const res = await fetch(`/api/posts/${post.id}/bookmark`, { method: 'POST' });
       const json = await res.json();
       if (json.error) {
-        // Revert on failure
         setBookmarked(originalBookmarked);
       }
     } catch (err) {
-      console.error('Failed to toggle bookmark:', err);
       setBookmarked(originalBookmarked);
     }
   };
@@ -106,42 +100,50 @@ export function PostCard({ post }: PostCardProps) {
 
       {/* Action bar */}
       <div className="flex items-center gap-4 sm:gap-6 mt-3 pt-3 border-t border-gray-100 dark:border-gray-700/50">
-        <button
-          onClick={handleLike}
-          className={cn(
-            'flex items-center gap-1.5 text-sm transition-colors min-h-[44px] min-w-[44px]',
-            liked
-              ? 'text-red-500'
-              : 'text-gray-400 hover:text-red-500'
-          )}
-        >
-          <Heart className={cn('w-4 h-4', liked && 'fill-current')} />
-          <span>{likeCount}</span>
-        </button>
+        {user ? (
+          <>
+            <button
+              onClick={handleLike}
+              className={cn(
+                'flex items-center gap-1.5 text-sm transition-colors min-h-[44px] min-w-[44px]',
+                liked ? 'text-red-500' : 'text-gray-400 hover:text-red-500'
+              )}
+            >
+              <Heart className={cn('w-4 h-4', liked && 'fill-current')} />
+              <span>{likeCount}</span>
+            </button>
 
-        <Link
-          href={`/planet/${post.id}`}
-          className="flex items-center gap-1.5 text-sm text-gray-400 hover:text-primary-600 dark:hover:text-primary-400 transition-colors min-h-[44px] min-w-[44px]"
-        >
-          <MessageCircle className="w-4 h-4" />
-          <span>{post.comment_count}</span>
-        </Link>
+            <Link
+              href={`/planet/${post.id}#comments`}
+              className="flex items-center gap-1.5 text-sm text-gray-400 hover:text-primary-600 dark:hover:text-primary-400 transition-colors min-h-[44px] min-w-[44px]"
+            >
+              <MessageCircle className="w-4 h-4" />
+              <span>{post.comment_count}</span>
+            </Link>
 
-        <button
-          onClick={handleBookmark}
-          className={cn(
-            'flex items-center gap-1.5 text-sm transition-colors min-h-[44px] min-w-[44px]',
-            bookmarked
-              ? 'text-yellow-500'
-              : 'text-gray-400 hover:text-yellow-500'
-          )}
-        >
-          <Bookmark className={cn('w-4 h-4', bookmarked && 'fill-current')} />
-        </button>
+            <button
+              onClick={handleBookmark}
+              className={cn(
+                'flex items-center gap-1.5 text-sm transition-colors min-h-[44px] min-w-[44px]',
+                bookmarked ? 'text-yellow-500' : 'text-gray-400 hover:text-yellow-500'
+              )}
+            >
+              <Bookmark className={cn('w-4 h-4', bookmarked && 'fill-current')} />
+            </button>
 
-        <button className="flex items-center gap-1.5 text-sm text-gray-400 hover:text-primary-600 dark:hover:text-primary-400 transition-colors ml-auto min-h-[44px] min-w-[44px]">
-          <Share2 className="w-4 h-4" />
-        </button>
+            <button className="flex items-center gap-1.5 text-sm text-gray-400 hover:text-primary-600 dark:hover:text-primary-400 transition-colors ml-auto min-h-[44px] min-w-[44px]">
+              <Share2 className="w-4 h-4" />
+            </button>
+          </>
+        ) : (
+          <Link
+            href="/login"
+            className="flex items-center gap-2 text-sm text-primary-600 dark:text-primary-400 hover:underline min-h-[44px]"
+          >
+            <Heart className="w-4 h-4" />
+            <span>登录后即可点赞 · 评论 · 收藏</span>
+          </Link>
+        )}
       </div>
     </article>
   );

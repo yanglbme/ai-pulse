@@ -32,7 +32,7 @@ export function CommentInput({ postId, parentId, placeholder = '写下你的想�
         author_id: user.id,
         parent_id: parentId || null,
         content: content.trim(),
-      }) as any;
+      });
 
       if (error) throw error;
       setContent('');

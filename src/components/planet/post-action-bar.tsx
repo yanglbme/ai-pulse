@@ -2,7 +2,8 @@
 
 import { useState } from 'react';
 import { useAuth } from '@/lib/hooks/use-auth';
-import { Heart, Bookmark, Share2 } from 'lucide-react';
+import { Heart, Bookmark, Share2, LogIn } from 'lucide-react';
+import Link from 'next/link';
 import { cn } from '@/lib/utils/cn';
 
 interface PostActionBarProps {
@@ -56,6 +57,20 @@ export function PostActionBar({ postId, initialLiked, initialBookmarked, likeCou
       setBookmarked(originalBookmarked);
     }
   };
+
+  if (!user) {
+    return (
+      <div className="flex items-center justify-center gap-4 px-4 sm:px-6 py-4 border-t border-gray-100 dark:border-gray-700/50 bg-gray-50/50 dark:bg-gray-900/30">
+        <Link
+          href="/login"
+          className="flex items-center gap-2 text-sm text-primary-600 dark:text-primary-400 hover:underline min-h-[44px]"
+        >
+          <LogIn className="w-4 h-4" />
+          登录后即可点赞、收藏和评论
+        </Link>
+      </div>
+    );
+  }
 
   return (
     <div className="flex items-center gap-6 px-4 sm:px-6 py-3 border-t border-gray-100 dark:border-gray-700/50 bg-gray-50/50 dark:bg-gray-900/30">

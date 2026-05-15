@@ -1,12 +1,13 @@
 'use client';
 
 import { useState } from 'react';
+import Link from 'next/link';
 import { Avatar } from '@/components/ui/avatar';
 import { CommentInput } from './comment-input';
 import { formatRelativeTime } from '@/lib/utils/time';
 import type { Comment, Profile } from '@/lib/types/database';
 import { useAuth } from '@/lib/hooks/use-auth';
-import { Heart, MessageSquare } from 'lucide-react';
+import { Heart, MessageSquare, LogIn } from 'lucide-react';
 import { cn } from '@/lib/utils/cn';
 import { createClient } from '@/lib/supabase/client';
 
@@ -28,13 +29,13 @@ export function CommentItem({ comment, replies = [], postId, onRefresh }: Commen
     if (!user) return;
     try {
       const supa = createClient() as any;
-      const { data: { user } } = await supa.auth.getUser();
-      if (!user) return;
+      const { data: { user: u } } = await supa.auth.getUser();
+      if (!u) return;
 
       if (liked) {
-        await supa.from('likes').delete().match({ user_id: user.id, comment_id: comment.id });
+        await supa.from('likes').delete().match({ user_id: u.id, comment_id: comment.id });
       } else {
-        await supa.from('likes').insert({ user_id: user.id, comment_id: comment.id });
+        await supa.from('likes').insert({ user_id: u.id, comment_id: comment.id });
       }
       setLiked(!liked);
       setLikeCount(prev => liked ? prev - 1 : prev + 1);
@@ -65,29 +66,44 @@ export function CommentItem({ comment, replies = [], postId, onRefresh }: Commen
             {comment.content}
           </p>
           <div className="flex items-center gap-4 mt-2 text-xs text-gray-400">
-            <button
-              onClick={handleLike}
-              className={cn(
-                'flex items-center gap-1 hover:text-red-500 transition-colors min-h-[44px]',
-                liked && 'text-red-500'
-              )}
-            >
-              <Heart className={cn('w-3.5 h-3.5', liked && 'fill-current')} />
-              <span>{likeCount}</span>
-            </button>
-            <button
-              onClick={() => setShowReply(!showReply)}
-              className="flex items-center gap-1 hover:text-primary-600 transition-colors min-h-[44px]"
-            >
-              <MessageSquare className="w-3.5 h-3.5" />
-              <span>回复</span>
-            </button>
+            {user ? (
+              <button
+                onClick={handleLike}
+                className={cn(
+                  'flex items-center gap-1 hover:text-red-500 transition-colors min-h-[44px]',
+                  liked && 'text-red-500'
+                )}
+              >
+                <Heart className={cn('w-3.5 h-3.5', liked && 'fill-current')} />
+                <span>{likeCount}</span>
+              </button>
+            ) : (
+              <Link href="/login" className="flex items-center gap-1 hover:text-red-500 transition-colors min-h-[44px]">
+                <Heart className="w-3.5 h-3.5" />
+                <span>{likeCount}</span>
+              </Link>
+            )}
+
+            {user ? (
+              <button
+                onClick={() => setShowReply(!showReply)}
+                className="flex items-center gap-1 hover:text-primary-600 transition-colors min-h-[44px]"
+              >
+                <MessageSquare className="w-3.5 h-3.5" />
+                <span>回复</span>
+              </button>
+            ) : (
+              <Link href="/login" className="flex items-center gap-1 hover:text-primary-600 transition-colors min-h-[44px]">
+                <LogIn className="w-3.5 h-3.5" />
+                <span>回复</span>
+              </Link>
+            )}
           </div>
         </div>
       </div>
 
       {/* Reply input */}
-      {showReply && (
+      {showReply && user && (
         <div className="ml-11 mt-3">
           <CommentInput
             postId={postId}

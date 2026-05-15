@@ -5,6 +5,7 @@ import { Avatar } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { TopicBadge } from '@/components/common/topic-badge';
 import { TagBadge } from '@/components/common/tag-badge';
+import { useAuth } from '@/lib/hooks/use-auth';
 import { formatRelativeTime } from '@/lib/utils/time';
 import type { PostWithMeta } from '@/lib/types/database';
 import { Heart, MessageCircle, Bookmark, Share2 } from 'lucide-react';
@@ -16,16 +17,19 @@ interface PostCardProps {
 }
 
 export function PostCard({ post }: PostCardProps) {
+  const { user } = useAuth();
   const [liked, setLiked] = useState(post.is_liked);
   const [likeCount, setLikeCount] = useState(post.like_count);
   const [bookmarked, setBookmarked] = useState(post.is_bookmarked);
 
   const handleLike = () => {
+    if (!user) return;
     setLiked(!liked);
     setLikeCount(prev => liked ? prev - 1 : prev + 1);
   };
 
   const handleBookmark = () => {
+    if (!user) return;
     setBookmarked(!bookmarked);
   };
 

@@ -1,9 +1,12 @@
 'use client';
 
 import { useState } from 'react';
+import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Avatar } from '@/components/ui/avatar';
+import { useAuth } from '@/lib/hooks/use-auth';
 import { createClient } from '@/lib/supabase/client';
+import { LogIn } from 'lucide-react';
 
 interface CommentInputProps {
   postId: string;
@@ -14,24 +17,22 @@ interface CommentInputProps {
 }
 
 export function CommentInput({ postId, parentId, placeholder = '写下你的想法...', onSubmitted, onCancel }: CommentInputProps) {
+  const { user, loading } = useAuth();
   const [content, setContent] = useState('');
   const [submitting, setSubmitting] = useState(false);
 
   const handleSubmit = async () => {
-    if (!content.trim()) return;
+    if (!content.trim() || !user) return;
     setSubmitting(true);
 
     try {
-      const supa = createClient() as any;
-      const { data: { user } } = await supa.auth.getUser();
-      if (!user) return;
-
-      const { error } = await supa.from('comments').insert({
+      const supabase = createClient();
+      const { error } = await supabase.from('comments').insert({
         post_id: postId,
         author_id: user.id,
         parent_id: parentId || null,
         content: content.trim(),
-      });
+      }) as any;
 
       if (error) throw error;
       setContent('');
@@ -43,9 +44,29 @@ export function CommentInput({ postId, parentId, placeholder = '写下你的想�
     }
   };
 
+  if (loading) {
+    return <div className="h-24 animate-pulse bg-gray-100 dark:bg-gray-800 rounded-lg" />;
+  }
+
+  if (!user) {
+    return (
+      <div className="flex items-center justify-between p-4 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50">
+        <p className="text-sm text-gray-500 dark:text-gray-400">
+          登录后即可发表评论
+        </p>
+        <Link href="/login">
+          <Button variant="primary" size="sm">
+            <LogIn className="w-4 h-4 mr-1" />
+            去登录
+          </Button>
+        </Link>
+      </div>
+    );
+  }
+
   return (
     <div className="flex gap-3">
-      <Avatar size="sm" name="我" className="flex-shrink-0 mt-1" />
+      <Avatar src={user.user_metadata?.avatar_url} name={user.user_metadata?.full_name} size="sm" className="flex-shrink-0 mt-1" />
       <div className="flex-1 space-y-2">
         <textarea
           value={content}

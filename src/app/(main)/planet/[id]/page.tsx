@@ -6,8 +6,8 @@ import { Badge } from '@/components/ui/badge';
 import { TopicBadge } from '@/components/common/topic-badge';
 import { TagBadge } from '@/components/common/tag-badge';
 import { formatFullDate } from '@/lib/utils/time';
-import { Heart, Bookmark, Share2, ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
+import { ArrowLeft } from 'lucide-react';
 import { notFound } from 'next/navigation';
 import type { PageProps } from '@/types/page-props';
 
@@ -97,10 +97,9 @@ export default async function PostDetailPage(props: PageProps<'/planet/[id]'>) {
             <Bookmark className="w-5 h-5" />
             <span>{post.bookmark_count}</span>
           </button>
-          <button className="flex items-center gap-2 text-sm text-gray-500 hover:text-primary-600 transition-colors ml-auto min-h-[44px]">
-            <Share2 className="w-5 h-5" />
-            <span>分享</span>
-          </button>
+          <Link href="/login" className="flex items-center gap-2 text-sm text-primary-600 dark:text-primary-400 hover:underline ml-auto min-h-[44px]">
+            登录后互动
+          </Link>
         </div>
       </article>
 

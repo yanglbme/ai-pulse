@@ -5,6 +5,7 @@ import { Avatar } from '@/components/ui/avatar';
 import { CommentInput } from './comment-input';
 import { formatRelativeTime } from '@/lib/utils/time';
 import type { Comment, Profile } from '@/lib/types/database';
+import { useAuth } from '@/lib/hooks/use-auth';
 import { Heart, MessageSquare } from 'lucide-react';
 import { cn } from '@/lib/utils/cn';
 import { createClient } from '@/lib/supabase/client';
@@ -17,12 +18,14 @@ interface CommentItemProps {
 }
 
 export function CommentItem({ comment, replies = [], postId, onRefresh }: CommentItemProps) {
+  const { user } = useAuth();
   const [showReply, setShowReply] = useState(false);
   const [showReplies, setShowReplies] = useState(false);
   const [liked, setLiked] = useState(false);
   const [likeCount, setLikeCount] = useState(comment.like_count);
 
   const handleLike = async () => {
+    if (!user) return;
     try {
       const supa = createClient() as any;
       const { data: { user } } = await supa.auth.getUser();

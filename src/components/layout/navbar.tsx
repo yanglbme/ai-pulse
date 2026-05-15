@@ -103,7 +103,7 @@ export function Navbar() {
                         </div>
                         <div className="py-1">
                           <Link
-                            href={`/profile/${profile?.username || 'me'}`}
+                            href={profile?.username ? `/profile/${profile.username}` : '/'}
                             className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
                             onClick={() => setUserMenuOpen(false)}
                           >

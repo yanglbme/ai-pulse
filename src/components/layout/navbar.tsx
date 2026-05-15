@@ -128,7 +128,6 @@ export function Navbar() {
                 {/* Not authenticated: Login button */}
                 <Link href="/login" className="hidden sm:flex">
                   <Button variant="outline" size="sm">
-                    <LogIn className="w-4 h-4 mr-1" />
                     登录
                   </Button>
                 </Link>

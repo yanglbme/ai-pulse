@@ -9,33 +9,32 @@ import { Badge } from '@/components/ui/badge';
 import { createClient } from '@/lib/supabase/client';
 import { X, Loader2 } from 'lucide-react';
 
-const TOPICS = [
-  { id: 'ai', name: 'AI' },
-  { id: 'llm', name: 'LLM' },
-  { id: 'agent', name: 'Agent' },
-  { id: 'rag', name: 'RAG' },
-  { id: 'machine-learning', name: '机器学习' },
-  { id: 'mlops', name: 'MLOps' },
-  { id: 'deep-learning', name: '深度学习' },
-  { id: 'computer-vision', name: '计算机视觉' },
-  { id: 'nlp', name: '自然语言处理' },
-  { id: 'open-source', name: '开源' },
-];
+// Topic type with real UUID
+interface Topic {
+  id: string;
+  slug: string;
+  name: string;
+}
 
-export function PostEditor() {
+interface PostEditorProps {
+  topics: Topic[];
+}
+
+export function PostEditor({ topics }: PostEditorProps) {
   const router = useRouter();
   const [title, setTitle] = useState('');
   const [summary, setSummary] = useState('');
   const [content, setContent] = useState('');
-  const [selectedTopics, setSelectedTopics] = useState<string[]>([]);
+  // Now stores topic IDs (UUIDs)
+  const [selectedTopicIds, setSelectedTopicIds] = useState<string[]>([]);
   const [tagInput, setTagInput] = useState('');
   const [tags, setTags] = useState<string[]>([]);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
 
-  const toggleTopic = (slug: string) => {
-    setSelectedTopics(prev =>
-      prev.includes(slug) ? prev.filter(t => t !== slug) : [...prev, slug]
+  const toggleTopic = (topicId: string) => {
+    setSelectedTopicIds(prev =>
+      prev.includes(topicId) ? prev.filter(t => t !== topicId) : [...prev, topicId]
     );
   };
 
@@ -83,13 +82,18 @@ export function PostEditor() {
 
       if (postError) throw postError;
 
-      // Link topics
-      if (selectedTopics.length > 0) {
-        const topicRecords = selectedTopics.map((slug: string) => ({
+      // Link topics using REAL UUIDs
+      if (selectedTopicIds.length > 0) {
+        const topicRecords = selectedTopicIds.map(topicId => ({
           post_id: post.id,
-          topic_id: slug,
+          topic_id: topicId,
         }));
-        await supa.from('post_topics').insert(topicRecords);
+        
+        // Insert and check for errors
+        const { error: linkError } = await supa.from('post_topics').insert(topicRecords);
+        if (linkError) {
+          console.error('Failed to link topics:', linkError);
+        }
       }
 
       // Create or link tags
@@ -161,16 +165,16 @@ export function PostEditor() {
       {/* Topics */}
       <div>
         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-          话题
+          话题 (可多选)
         </label>
         <div className="flex flex-wrap gap-2">
-          {TOPICS.map(topic => (
+          {topics.map(topic => (
             <button
               key={topic.id}
               type="button"
               onClick={() => toggleTopic(topic.id)}
               className={`px-3 py-1.5 rounded-full text-sm transition-colors min-h-[44px] ${
-                selectedTopics.includes(topic.id)
+                selectedTopicIds.includes(topic.id)
                   ? 'bg-primary-600 text-white'
                   : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400'
               }`}

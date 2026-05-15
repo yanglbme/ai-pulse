@@ -1,23 +1,18 @@
-'use client';
-
-import { useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { createClient } from '@/lib/supabase/server';
 import { PostEditor } from '@/components/planet/post-editor';
-import { useAuth } from '@/lib/hooks/use-auth';
 
-export default function NewPostPage() {
-  const router = useRouter();
-  const { user, loading } = useAuth();
+export const metadata = {
+  title: '发布内容',
+};
 
-  useEffect(() => {
-    if (!loading && !user) {
-      router.push('/login');
-    }
-  }, [loading, user, router]);
+export default async function NewPostPage() {
+  const supa = await createClient() as any;
 
-  if (loading || !user) {
-    return <div className="p-8 text-center text-gray-400">加载中...</div>;
-  }
+  // Fetch topics to pass to the editor (so it can use real UUIDs)
+  const { data: topics } = await supa
+    .from('topics')
+    .select('id, slug, name')
+    .order('name');
 
   return (
     <div>
@@ -25,7 +20,7 @@ export default function NewPostPage() {
         发布内容
       </h1>
       <div className="bg-white dark:bg-gray-800/50 rounded-xl border border-gray-200 dark:border-gray-700/50">
-        <PostEditor />
+        <PostEditor topics={topics || []} />
       </div>
     </div>
   );

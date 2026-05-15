@@ -1,36 +1,40 @@
 'use client';
 
 import { useTheme } from 'next-themes';
-import { Moon, Sun, Monitor } from 'lucide-react';
-import { cn } from '@/lib/utils/cn';
+import { Moon, Sun } from 'lucide-react';
+import { useEffect, useState } from 'react';
 
-export function ThemeToggle({ className }: { className?: string }) {
+export function ThemeToggle() {
   const { theme, setTheme } = useTheme();
+  // Use local state to avoid hydration mismatch with next-themes
+  const [mounted, setMounted] = useState(false);
 
-  const themes = [
-    { key: 'light', icon: Sun, label: '浅色' },
-    { key: 'dark', icon: Moon, label: '深色' },
-    { key: 'system', icon: Monitor, label: '跟随系统' },
-  ] as const;
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!mounted) {
+    // Placeholder to prevent layout shift
+    return <div className="p-2 w-9 h-9" />;
+  }
+
+  const isDark = theme === 'dark';
+
+  const toggleTheme = () => {
+    setTheme(isDark ? 'light' : 'dark');
+  };
 
   return (
-    <div className={cn('flex items-center gap-1', className)}>
-      {themes.map(({ key, icon: Icon, label }) => (
-        <button
-          key={key}
-          onClick={() => setTheme(key)}
-          className={cn(
-            'p-2 rounded-lg transition-colors',
-            theme === key
-              ? 'bg-gray-100 dark:bg-gray-700 text-primary-600 dark:text-primary-400'
-              : 'text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800'
-          )}
-          title={label}
-          aria-label={label}
-        >
-          <Icon className="w-4 h-4" />
-        </button>
-      ))}
-    </div>
+    <button
+      onClick={toggleTheme}
+      className="p-2 rounded-lg text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center"
+      aria-label="Toggle theme"
+    >
+      {isDark ? (
+        <Sun className="w-5 h-5" />
+      ) : (
+        <Moon className="w-5 h-5" />
+      )}
+    </button>
   );
 }

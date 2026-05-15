@@ -2,19 +2,21 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Home, Compass, Plus, Bookmark, User, Bell } from 'lucide-react';
+import { Home, Compass, Plus, Bookmark, Bell, LogIn } from 'lucide-react';
 import { cn } from '@/lib/utils/cn';
-
-const items = [
-  { href: '/', icon: Home, label: '星球' },
-  { href: '/topics', icon: Compass, label: '话题' },
-  { href: '/planet/new', icon: Plus, label: '发布', center: true },
-  { href: '/bookmarks', icon: Bookmark, label: '收藏' },
-  { href: '/notifications', icon: Bell, label: '通知' },
-];
+import { useAuth } from '@/lib/hooks/use-auth';
 
 export function MobileNav() {
   const pathname = usePathname();
+  const { user } = useAuth();
+
+  const items = [
+    { href: '/', icon: Home, label: '星球' },
+    { href: '/topics', icon: Compass, label: '话题' },
+    { href: user ? '/planet/new' : '/login', icon: user ? Plus : LogIn, label: user ? '发布' : '登录', center: true },
+    { href: '/bookmarks', icon: Bookmark, label: '收藏' },
+    { href: '/notifications', icon: Bell, label: '通知' },
+  ];
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-50 lg:hidden">
@@ -29,7 +31,10 @@ export function MobileNav() {
                   href={href}
                   className="flex flex-col items-center justify-center"
                 >
-                  <div className="w-12 h-12 rounded-full bg-primary-600 flex items-center justify-center text-white -mt-4 shadow-lg">
+                  <div className={cn(
+                    'w-12 h-12 rounded-full flex items-center justify-center text-white -mt-4 shadow-lg',
+                    user ? 'bg-primary-600' : 'bg-gray-500'
+                  )}>
                     <Icon className="w-5 h-5" />
                   </div>
                   <span className="text-xs mt-1 text-gray-500">{label}</span>

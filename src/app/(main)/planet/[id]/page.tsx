@@ -7,7 +7,7 @@ import { TopicBadge } from '@/components/common/topic-badge';
 import { TagBadge } from '@/components/common/tag-badge';
 import { formatFullDate } from '@/lib/utils/time';
 import Link from 'next/link';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Heart, Bookmark } from 'lucide-react';
 import { notFound } from 'next/navigation';
 import type { PageProps } from '@/types/page-props';
 

@@ -26,8 +26,8 @@ export function CommentInput({ postId, parentId, placeholder = '写下你的想�
     setSubmitting(true);
 
     try {
-      const supabase = createClient();
-      const { error } = await supabase.from('comments').insert({
+      const supa = createClient() as any;
+      const { error } = await supa.from('comments').insert({
         post_id: postId,
         author_id: user.id,
         parent_id: parentId || null,

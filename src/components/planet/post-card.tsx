@@ -22,15 +22,48 @@ export function PostCard({ post }: PostCardProps) {
   const [likeCount, setLikeCount] = useState(post.like_count);
   const [bookmarked, setBookmarked] = useState(post.is_bookmarked);
 
-  const handleLike = () => {
+  const handleLike = async () => {
     if (!user) return;
+    const originalLiked = liked;
+    const originalCount = likeCount;
+
+    // Optimistic update
     setLiked(!liked);
     setLikeCount(prev => liked ? prev - 1 : prev + 1);
+
+    try {
+      const res = await fetch(`/api/posts/${post.id}/like`, { method: 'POST' });
+      const json = await res.json();
+      if (json.error) {
+        // Revert on failure
+        setLiked(originalLiked);
+        setLikeCount(originalCount);
+      }
+    } catch (err) {
+      console.error('Failed to toggle like:', err);
+      setLiked(originalLiked);
+      setLikeCount(originalCount);
+    }
   };
 
-  const handleBookmark = () => {
+  const handleBookmark = async () => {
     if (!user) return;
+    const originalBookmarked = bookmarked;
+
+    // Optimistic update
     setBookmarked(!bookmarked);
+
+    try {
+      const res = await fetch(`/api/posts/${post.id}/bookmark`, { method: 'POST' });
+      const json = await res.json();
+      if (json.error) {
+        // Revert on failure
+        setBookmarked(originalBookmarked);
+      }
+    } catch (err) {
+      console.error('Failed to toggle bookmark:', err);
+      setBookmarked(originalBookmarked);
+    }
   };
 
   return (

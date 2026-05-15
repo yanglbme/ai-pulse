@@ -16,6 +16,10 @@ export default async function PostDetailPage(props: PageProps<'/planet/[id]'>) {
 
   const supa = await createClient() as any;
 
+  // Fetch user
+  const { data: { user } } = await supa.auth.getUser();
+
+  // Fetch post
   const { data: post, error } = await supa
     .from('posts')
     .select(`
@@ -97,9 +101,15 @@ export default async function PostDetailPage(props: PageProps<'/planet/[id]'>) {
             <Bookmark className="w-5 h-5" />
             <span>{post.bookmark_count}</span>
           </button>
-          <Link href="/login" className="flex items-center gap-2 text-sm text-primary-600 dark:text-primary-400 hover:underline ml-auto min-h-[44px]">
-            登录后互动
-          </Link>
+          {user ? (
+            <button className="flex items-center gap-2 text-sm text-gray-500 hover:text-primary-600 transition-colors ml-auto min-h-[44px]">
+              <span>分享</span>
+            </button>
+          ) : (
+            <Link href="/login" className="flex items-center gap-2 text-sm text-primary-600 dark:text-primary-400 hover:underline ml-auto min-h-[44px]">
+              登录后互动
+            </Link>
+          )}
         </div>
       </article>
 
